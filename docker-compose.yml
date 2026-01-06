@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: ${DB_USER:-kgschema}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-changeme}
+      POSTGRES_DB: ${DB_NAME:-kgschema}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER:-kgschema}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${DB_USER:-kgschema}:${DB_PASSWORD:-changeme}@db:5432/${DB_NAME:-kgschema}
+      JWT_SECRET: ${JWT_SECRET:-your-secret-key-change-in-production}
+      JWT_ACCESS_EXPIRE_MINUTES: 30
+      JWT_REFRESH_EXPIRE_DAYS: 7
+      DEBUG: ${DEBUG:-false}
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./app:/app/app:ro # For development hot-reload
+
+volumes:
+  pgdata:
