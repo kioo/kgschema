@@ -3,15 +3,13 @@ version: '3.8'
 services:
   db:
     image: postgres:15-alpine
-    container_name: kgschema-db
+    container_name: kgschema-db-prod
     environment:
       POSTGRES_USER: ${DB_USER:-kgschema}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-changeme}
       POSTGRES_DB: ${DB_NAME:-kgschema}
     volumes:
       - pgdata:/var/lib/postgresql/data
-    ports:
-      - "5433:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-kgschema}"]
       interval: 10s
@@ -19,45 +17,38 @@ services:
       retries: 5
     networks:
       - kgschema-network
+    restart: always
 
   backend:
     build:
       context: .
-      dockerfile: Dockerfile
-    container_name: kgschema-backend
+      dockerfile: Dockerfile.prod
+    container_name: kgschema-backend-prod
     environment:
       DATABASE_URL: postgresql+asyncpg://${DB_USER:-kgschema}:${DB_PASSWORD:-changeme}@db:5432/${DB_NAME:-kgschema}
       JWT_SECRET: ${JWT_SECRET:-your-secret-key-change-in-production}
       JWT_ACCESS_EXPIRE_MINUTES: 30
       JWT_REFRESH_EXPIRE_DAYS: 7
-      DEBUG: ${DEBUG:-true}
+      DEBUG: false
     depends_on:
       db:
         condition: service_healthy
-    ports:
-      - "8000:8000"
-    volumes:
-      - ./app:/app/app  # For development hot-reload
     networks:
       - kgschema-network
-    restart: unless-stopped
+    restart: always
 
   frontend:
     build:
       context: ./frontend
-      dockerfile: Dockerfile.dev
-    container_name: kgschema-frontend
-    environment:
-      - VITE_API_URL=http://localhost:8000
+      dockerfile: Dockerfile
+    container_name: kgschema-frontend-prod
+    depends_on:
+      - backend
     ports:
-      - "5173:5173"
-    volumes:
-      - ./frontend/src:/app/src  # For development hot-reload
-      - ./frontend/public:/app/public
-      - ./frontend/index.html:/app/index.html
+      - "80:80"
     networks:
       - kgschema-network
-    restart: unless-stopped
+    restart: always
 
 volumes:
   pgdata:

@@ -4,6 +4,7 @@ Revision ID: 002_prompts
 """
 from alembic import op
 import sqlalchemy as sa
+from sqlalchemy.dialects.postgresql import UUID
 
 
 # revision identifiers
@@ -17,7 +18,7 @@ def upgrade() -> None:
     # Prompts table
     op.create_table(
         'prompts',
-        sa.Column('id', sa.String(36), primary_key=True),
+        sa.Column('id', UUID(as_uuid=True), primary_key=True),
         sa.Column('tag', sa.String(128), nullable=False, unique=True, index=True),
         sa.Column('content', sa.Text(), nullable=False),
         sa.Column('description', sa.Text(), nullable=True),
@@ -30,8 +31,8 @@ def upgrade() -> None:
     # Prompt versions table
     op.create_table(
         'prompt_versions',
-        sa.Column('id', sa.String(36), primary_key=True),
-        sa.Column('prompt_id', sa.String(36), sa.ForeignKey('prompts.id'), nullable=False, index=True),
+        sa.Column('id', UUID(as_uuid=True), primary_key=True),
+        sa.Column('prompt_id', UUID(as_uuid=True), sa.ForeignKey('prompts.id'), nullable=False, index=True),
         sa.Column('version', sa.Integer(), nullable=False),
         sa.Column('content', sa.Text(), nullable=False),
         sa.Column('description', sa.Text(), nullable=True),
