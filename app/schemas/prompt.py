@@ -1,6 +1,6 @@
 """Pydantic schemas for Prompt management."""
 from datetime import datetime
-from typing import Optional, List
+from typing import Optional, List, Any
 from pydantic import BaseModel, Field
 
 
@@ -33,9 +33,20 @@ class PromptResponse(PromptBase):
     is_active: bool
     created_at: datetime
     updated_at: datetime
-    
-    class Config:
-        from_attributes = True
+
+    @classmethod
+    def from_orm_with_uuid(cls, obj: Any) -> 'PromptResponse':
+        """Create from ORM object with UUID to string conversion."""
+        return cls.model_construct(
+            id=str(obj.id),
+            tag=obj.tag,
+            content=obj.content,
+            description=obj.description,
+            current_version=obj.current_version,
+            is_active=obj.is_active,
+            created_at=obj.created_at,
+            updated_at=obj.updated_at,
+        )
 
 
 class PromptListResponse(BaseModel):
@@ -58,9 +69,19 @@ class PromptVersionResponse(BaseModel):
     description: Optional[str]
     change_note: Optional[str]
     created_at: datetime
-    
-    class Config:
-        from_attributes = True
+
+    @classmethod
+    def from_orm_with_uuid(cls, obj: Any) -> 'PromptVersionResponse':
+        """Create from ORM object with UUID to string conversion."""
+        return cls.model_construct(
+            id=str(obj.id),
+            prompt_id=str(obj.prompt_id),
+            version=obj.version,
+            content=obj.content,
+            description=obj.description,
+            change_note=obj.change_note,
+            created_at=obj.created_at,
+        )
 
 
 class PromptVersionListResponse(BaseModel):

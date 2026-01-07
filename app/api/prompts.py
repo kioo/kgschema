@@ -53,7 +53,7 @@ async def list_prompts(
     items = result.scalars().all()
     
     return PromptListResponse(
-        items=[PromptResponse.model_validate(p) for p in items],
+        items=[PromptResponse.from_orm_with_uuid(p) for p in items],
         total=total,
         page=page,
         size=size,
@@ -88,7 +88,7 @@ async def create_prompt(
     
     # Create initial version
     version = PromptVersion(
-        prompt_id=str(prompt.id),
+        prompt_id=prompt.id,
         version=1,
         content=data.content,
         description=data.description,
@@ -109,8 +109,8 @@ async def create_prompt(
     
     await db.commit()
     await db.refresh(prompt)
-    
-    return PromptResponse.model_validate(prompt)
+
+    return PromptResponse.from_orm_with_uuid(prompt)
 
 
 @router.get("/{prompt_id}", response_model=PromptDetailResponse)
@@ -135,10 +135,10 @@ async def get_prompt(
         .order_by(PromptVersion.version.desc())
     )
     versions = versions_result.scalars().all()
-    
-    response = PromptDetailResponse.model_validate(prompt)
-    response.versions = [PromptVersionResponse.model_validate(v) for v in versions]
-    
+
+    response = PromptDetailResponse.from_orm_with_uuid(prompt)
+    response.versions = [PromptVersionResponse.from_orm_with_uuid(v) for v in versions]
+
     return response
 
 
@@ -169,9 +169,9 @@ async def update_prompt(
     # Create new version if requested
     if data.create_version and data.content is not None:
         prompt.current_version += 1
-        
+
         version = PromptVersion(
-            prompt_id=str(prompt.id),
+            prompt_id=prompt.id,
             version=prompt.current_version,
             content=prompt.content,
             description=prompt.description,
@@ -190,11 +190,11 @@ async def update_prompt(
         after_data={"content": prompt.content[:100] + "..." if len(prompt.content) > 100 else prompt.content, "description": prompt.description, "version": prompt.current_version},
         operator_id=str(current_user.id),
     )
-    
+
     await db.commit()
     await db.refresh(prompt)
-    
-    return PromptResponse.model_validate(prompt)
+
+    return PromptResponse.from_orm_with_uuid(prompt)
 
 
 @router.delete("/{prompt_id}", status_code=204)
@@ -249,9 +249,9 @@ async def list_prompt_versions(
         .order_by(PromptVersion.version.desc())
     )
     versions = versions_result.scalars().all()
-    
+
     return PromptVersionListResponse(
-        items=[PromptVersionResponse.model_validate(v) for v in versions],
+        items=[PromptVersionResponse.from_orm_with_uuid(v) for v in versions],
         total=len(versions),
     )
 
@@ -274,8 +274,8 @@ async def get_prompt_version(
     
     if not prompt_version:
         raise HTTPException(status_code=404, detail="Version not found")
-    
-    return PromptVersionResponse.model_validate(prompt_version)
+
+    return PromptVersionResponse.from_orm_with_uuid(prompt_version)
 
 
 @router.post("/{prompt_id}/rollback/{version}", response_model=PromptResponse)
@@ -316,7 +316,7 @@ async def rollback_to_version(
     
     # Create new version for rollback
     new_version = PromptVersion(
-        prompt_id=str(prompt.id),
+        prompt_id=prompt.id,
         version=prompt.current_version,
         content=prompt.content,
         description=prompt.description,
@@ -335,8 +335,8 @@ async def rollback_to_version(
         after_data={"content": prompt.content[:100] + "...", "version": prompt.current_version, "rollback_from": version},
         operator_id=str(current_user.id),
     )
-    
+
     await db.commit()
     await db.refresh(prompt)
-    
-    return PromptResponse.model_validate(prompt)
+
+    return PromptResponse.from_orm_with_uuid(prompt)
