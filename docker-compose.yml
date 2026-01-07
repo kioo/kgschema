@@ -35,7 +35,7 @@ services:
       db:
         condition: service_healthy
     ports:
-      - "8000:8000"
+      - "8002:8000"
     volumes:
       - ./app:/app/app # For development hot-reload
     networks:
@@ -48,7 +48,7 @@ services:
       dockerfile: Dockerfile.dev
     container_name: kgschema-frontend
     environment:
-      - VITE_API_URL=http://localhost:8000
+      - VITE_API_URL=http://localhost:8002
     ports:
       - "5173:5173"
     volumes:
