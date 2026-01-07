@@ -7,6 +7,7 @@ import {
     BookOutlined,
     ClusterOutlined,
     HistoryOutlined,
+    TagsOutlined,
 } from '@ant-design/icons';
 import { authApi } from '../api/auth';
 
@@ -33,6 +34,11 @@ const MainLayout: React.FC = () => {
             key: '/relations',
             icon: <ClusterOutlined />,
             label: '关系管理',
+        },
+        {
+            key: '/versions',
+            icon: <TagsOutlined />,
+            label: '版本管理',
         },
         {
             key: '/users',

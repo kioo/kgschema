@@ -5,6 +5,7 @@ import EntityList from './pages/EntityList';
 import EntityDetail from './pages/EntityDetail';
 import RelationList from './pages/RelationList';
 import RelationDetail from './pages/RelationDetail';
+import VersionList from './pages/VersionList';
 import ProtectedRoute from './router/ProtectedRoute';
 import MainLayout from './layouts/MainLayout';
 
@@ -21,6 +22,7 @@ function App() {
           <Route path="/entities/:id" element={<EntityDetail />} />
           <Route path="/relations" element={<RelationList />} />
           <Route path="/relations/:id" element={<RelationDetail />} />
+          <Route path="/versions" element={<VersionList />} />
           <Route path="/audit" element={<div>审计日志 (TODO)</div>} />
         </Route>
       </Route>
@@ -31,4 +33,5 @@ function App() {
 }
 
 export default App;
+
 
