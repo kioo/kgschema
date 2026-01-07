@@ -8,6 +8,7 @@ import {
     ClusterOutlined,
     HistoryOutlined,
     TagsOutlined,
+    MessageOutlined,
 } from '@ant-design/icons';
 import { authApi } from '../api/auth';
 
@@ -34,6 +35,11 @@ const MainLayout: React.FC = () => {
             key: '/relations',
             icon: <ClusterOutlined />,
             label: '关系管理',
+        },
+        {
+            key: '/prompts',
+            icon: <MessageOutlined />,
+            label: '提示词管理',
         },
         {
             key: '/versions',
